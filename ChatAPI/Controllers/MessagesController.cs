@@ -56,7 +56,7 @@ namespace ChatAPI.Controllers
 
             var messageFromRepo = await _repo.GetMessageThreads(userId, recipientId);
             var messages = _mapper.Map<IEnumerable<MessageForReturnDto>>(messageFromRepo);
-            // _hubContext.Clients.Caller.SendAsync("ReceiveMessage", userId, messages);
+            // await _hubContext.Clients.All.SendAsync("receivedMessag", messages);
             return Ok(messages);
         }
 
@@ -76,14 +76,14 @@ namespace ChatAPI.Controllers
             var messageToReturn = _mapper.Map<MessageForCreationDto>(message);
             if (await _repo.SaveAll())
             {
-                await _hubContext.Clients.User(recipinet.Id.ToString()).SendAsync("ReceivedMessage", messageToReturn);
+                await _hubContext.Clients.All.SendAsync("receivedMessage", messageToReturn);
                 return CreatedAtAction("GetMessage", new { userId, id = message.Id }, messageToReturn);
             }
 
             throw new Exception($"Message could not save");
 
         }
-        [HttpPost("{id}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMessage(int id, int userId)
         {
             if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
@@ -101,7 +101,8 @@ namespace ChatAPI.Controllers
                 _repo.DeleteMessage(messageFromRepo);
 
             if (await _repo.SaveAll())
-                return NoContent();
+                await _hubContext.Clients.All.SendAsync("messageDelete");
+            return NoContent();
 
             throw new Exception("Error deleting the message");
         }

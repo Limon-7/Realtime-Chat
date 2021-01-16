@@ -18,7 +18,7 @@ namespace ChatAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize]
+    [Authorize]
     public class UsersController : ControllerBase
     {
 
@@ -34,17 +34,20 @@ namespace ChatAPI.Controllers
             _hubContext = hubContext;
         }
 
-        [HttpGet]
+        [HttpGet("all/{id}")]
         public async Task<ActionResult> GetUsers()
         {
-            // if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
-            //     return Unauthorized();
-
             var usersFromRepo = await _repo.GetAllUsers();
             var users = _mapper.Map<IEnumerable<UserForReturnDto>>(usersFromRepo);
-            await _hubContext.Clients.All.SendAsync("getUser", _mapper.Map<IEnumerable<UserForReturnDto>>(usersFromRepo));
+            await _hubContext.Clients.All.SendAsync("refreshUsers", _mapper.Map<IEnumerable<UserForReturnDto>>(usersFromRepo));
             return Ok(users);
         }
-
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            var user = await _repo.GetUserById(id);
+            var userFromDto = _mapper.Map<UserForReturnDto>(user);
+            return Ok(userFromDto);
+        }
     }
 }

@@ -39,9 +39,7 @@ namespace ChatAPI
 
             services.AddAutoMapper(typeof(Startup));
             services.AddScoped<IAuthRepository, AuthRepository>();
-
             services.AddScoped<IMessageRepository, MessageRepository>();
-            // services.AddScoped<IHubClient,BroadcastHub>();
             services.AddAuthentication(opt =>
             {
                 opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -54,8 +52,6 @@ namespace ChatAPI
                     ValidateAudience = false,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    //ValidIssuer = "http://localhost:5000",
-                    //ValidAudience = "http://localhost:5000",
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["AppSettings:secretKey"]))
                 };
             });
@@ -82,14 +78,11 @@ namespace ChatAPI
             app.UseAuthentication();
 
             app.UseAuthorization();
-            // app.UseSignalR(routes =>
-            // {
-            //     routes.MapHub<BroadcastHub>("/notifyUser");
-            // });
+
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<BroadcastHub>("/notifyUser");
+                endpoints.MapHub<BroadcastHub>("/notify");
                 endpoints.MapControllers();
             });
         }

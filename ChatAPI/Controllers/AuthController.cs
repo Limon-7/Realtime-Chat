@@ -36,11 +36,18 @@ namespace ChatAPI.Controllers
         }
         [Authorize]
         [Produces("application/json")]
-        [HttpGet]
-        public async Task<IEnumerable<User>> GetUsers()
+        [HttpGet("all/{id}")]
+        public async Task<IEnumerable<User>> GetUsers(int id)
         {
-            var users = await _authRepository.GetAllUser();
+            var users = await _authRepository.GetAllUser(id);
             return users;
+        }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            var user = await _authRepository.GetUserById(id);
+            var userFromDto = _mapper.Map<UserForReturnDto>(user);
+            return Ok(userFromDto);
         }
 
         [HttpPost("register")]
@@ -49,8 +56,7 @@ namespace ChatAPI.Controllers
             var email = dto.Email.ToLower();
             var userToCreate = _mapper.Map<User>(dto);
             var createUser = await _authRepository.Register(userToCreate);
-            Console.WriteLine($"user created successfully");
-            // await _hubContext.Clients.All.SendAsync("getUsers", createUser);
+            await _hubContext.Clients.All.SendAsync("refreshUsers", createUser);
             return Ok(createUser);
             //var userToReturn = _mapper.Map<UserForDetailsDto>(createUser);
             //return CreatedAtRoute("GetUser", new { Controller = "User", id = createUser.Id }, userToReturn);

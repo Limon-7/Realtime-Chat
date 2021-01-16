@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace ChatAPI.Services
 {
-	public interface IAuthRepository
-	{
-		Task<User> Register(User user);
-		Task<User> Login(string userName);
+    public interface IAuthRepository
+    {
+        Task<User> Register(User user);
+        Task<User> Login(string userName);
 
-		Task<IEnumerable<User>> GetAllUser();
-	}
+        Task<IEnumerable<User>> GetAllUser(int id);
+        Task<User> GetUserById(int id);
+    }
 }
